@@ -1,0 +1,131 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Exam
+
+In this exam, we will work with the "frequently requested health data" from the OECD.
+Your task is to clean the data, compute a simple "efficiency score" and make three plots. 
+
+We will provide some suggestions for necessary steps that are needed to deal with the data.
+
+You will earn a higher grade if you provide nicer graphs.  
+
+Now you need to call the libaries
+
+* ggplot2
+* dplyr
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
+Now you have to read the de data that we have cleaned during tutorial 3 (oecddata.csv)
+
+```{r}
+oecd <- read.csv2('oecddata.csv', sep=';')
+
+```
+
+To see how the data look like, use the command:
+
+head(oecd)
+
+With the command
+
+oecd
+
+
+You can see the dataset in total.
+
+```{r}
+head(oecd)
+```
+```{r}
+oecd
+```
+
+## Graphs
+
+To make the graphs we need to make selections of the data. Please use "dplyr" (commands "select" and "filter") and the "pipe". The first assignment is to make a scatterplot using "ggplot". The graph contains data for all countries for the year 2014. Therefore make a dataframe first called "graph1" with the required data.
+Then, make a scatterplot with "Cost" on the x-axis and "LE" on the y-axis. You have to add a regression line with a shaded area for the confidence interval.
+
+
+```{r}
+graph1 <- data.frame(oecd) %>%
+  select(Country, Year, Cost, LE) %>%
+filter(Year == 2014)
+graph1
+```
+
+
+```{r}
+ggplot(graph1, aes(x = Cost, y = LE)) + geom_point() + geom_smooth(method=lm)
+```
+**Note:**
+*At first it may look like there are only 33 points however if you look closely you will see that 2 points have a bit of an overlay.The points at about x=2600 and y=81,5.*
+
+The second assignment is to make a line graph. You will use the years 2005-2015 for 5 countries (you can choose your own countries). Make a new dataframe called graph2 with the required data. Then, make a line graph with "Year"  and "Cost" on the y-axis. There should be coloured lines per country and a legend attached. 
+
+
+```{r}
+graph2 <- data.frame(oecd) %>%
+  select(Country, Year, Cost) %>%
+  filter(Country %in% c('Slovak Republic', 'Slovenia','Spain', 'Sweden', 'Switzerland'))
+graph2
+```
+```{r}
+graph2$Country <- as.factor(graph2$Country)
+ggplot(graph2, aes(x = Year, y = Cost, col = Country))+ geom_line()
+```
+
+## Efficiency scores
+
+The last assignment is to compute simple effiency scores. We will use the year 2014 for all countries (i.e. the dataframe "graph1").
+Make a new dateframe called "eff" (using graph1). Please use the "pipe" to execute to following steps:
+Select all the variables except the NA's (hint: use na.omit) and create a new column called "Ratio" with mutate. Ratio is defined as "Cost/LE" (cost per output).
+Create a new column called "Score" with mutate. Score is the ratio per country divided by the lowest ratio in the dataframe.
+To complete this dataframe order the dataset using "arrange" based on score (i.e. lowest Score first).
+
+
+Finally make a bar chart using ggplot. Countries should be on the x-axis and "Score" on the y-axis. 
+
+
+
+You can earn extra points if you are able to order the graph based on scores (lowest first, highest last), if you are able to make the x-axis readable, make the bar of the Netherlands red and the other bars blue and/or change the name of the y-axis to "Efficiency scores according to [your name]" 
+
+
+The figure should like this:
+
+![My Figure](eff.png)
+
+
+```{r}
+eff <- graph1 %>%
+  filter(!is.na(LE)) %>%
+  mutate(Ratio = Cost / LE) %>%
+  mutate(Score = min(Ratio) / Ratio) %>%
+  arrange(Score)
+eff
+
+
+```
+
+```{r}
+ggplot(eff, aes(x = reorder(Country,Score), y = Score)) + 
+  geom_bar(stat ='identity') + 
+  xlab('Country') + 
+  ylab ('Efficiency scores according to Mick') + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+**Note:**
+*After a lot of trial and error and with a little bit of help from Google.com i was able to plot the Geom_bar in order. I do not know how to add color hence why i can not highlight The Netherlands in red.*
+```
+
+
